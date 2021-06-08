@@ -8,10 +8,17 @@ import album
 
 
 def table_tag(inf):
+    """
+    Заключает информацию inf в тэг <table> 
+    """
     return '<table>{}</table>\n'.format(inf)
 
 
 def rw_tag(*inf, hd=False):
+    """
+    список inf заключается в строку таблицы,
+    где значение hd определяет является ли строка заголовком
+    """
     rw_tag = 'td'
     if hd:
         rw_tag = 'th'
@@ -20,6 +27,9 @@ def rw_tag(*inf, hd=False):
 
 
 def rus_num(num, choice):
+    """
+    в зависимости от числа ставит существительное в нужный падеж
+    """
     if (num // 10) % 10 == 1 or num % 10 == 0 or num % 10 >= 5:
         return '{} {}'.format(num, choice[2])
     elif num % 10 == 1:
@@ -30,6 +40,10 @@ def rus_num(num, choice):
 
 @route('/albums/<artist>')
 def albums(artist):
+    """
+    выводит информацию в виде таблицы о найденных альбомах по названию исполнителя
+    в заголовке таблицы указывается информация о количестве найденных альбомов
+    """
     albums_list = album.find(artist)
     if not albums_list:
         result = HTTPError(404, 'Альбомов {} не найдено'.format(artist))
@@ -43,6 +57,9 @@ def albums(artist):
 
 @route('/all')
 def all():
+    """
+    выводит в виде таблицы всю информацию о таблице album в БД albums.sqlite3
+    """
     all_list = album.all()
     album_rows = [rw_tag(n.artist, n.album, n.genre, n.year) for n in all_list]
     result = table_tag(rw_tag('Исполнитель', 'Название альбома',
@@ -52,11 +69,14 @@ def all():
 
 @route('/albums', method='POST')
 def add_album():
+    """
+    по информации из POST запроса формирует информацию о альбоме и добавляет в БД
+    Информация проходит необходимую валидацию
+    """
     artist = request.forms.get('artist')
     alb = request.forms.get('album')
     genre = request.forms.get('genre')
     year = request.forms.get('year')
-
 
     artist_list = album.find(artist)
     result = ''
@@ -65,8 +85,7 @@ def add_album():
         if alb in albums_names:
             result = HTTPError(409, 'Такой альбом уже существует')
 
-    if not result:
-
+    if not result:  # если альбома со схожим именем не было найдено, то данные проходят валидацию
         try:
             year = datetime.strptime(year, '%Y').year
             if not (1900 <= year <= datetime.today().year):
@@ -82,13 +101,10 @@ def add_album():
                 album=alb,
                 genre=genre,
                 year=year
-            )    
+            )
             result += album.add(album_whole)
         except Exception as ex:
             print(ex)
-        
-    
-    # result = 'Такой альбом можно добавить в БД\n{} {} {} {}'.format(artist, alb, genre, year)
     return result
 
 

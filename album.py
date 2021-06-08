@@ -9,6 +9,7 @@ Base = automap_base()
 Base.prepare(sa.create_engine(DB_PATH), reflect=True)
 Album = Base.classes.album
 
+
 def connect_db():
     """
     Устанавливает соединение к базе данных, создает таблицы, если их еще нет и возвращает объект сессии 
@@ -23,7 +24,7 @@ def all():
     выводит всю таблицу album из базы данных
     """
     return connect_db().query(Album).all()
-    
+
 
 def find(artist):
     """
@@ -42,7 +43,3 @@ def add(alb):
     session.add(alb)
     session.commit()
     return 'Альбом добавлен'
-
-
-# if __name__ == "__main__":
-    
